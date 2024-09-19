@@ -1,0 +1,16 @@
+# Logging configuration
+logging:
+  level: INFO # Logging level
+
+
+# Non-RT RIC configuration
+nonrtric:
+  base_url_rApp_catalogue: 'http://rappcatalogueservice.nonrtric.svc.cluster.local:9085/services'
+  base_url_pms: 'http://nonrtricgateway.nonrtric.svc.cluster.local:9090/a1-policy/v2'
+  service_name: 'rAppEnergySaver'
+  service_version: 'v1'
+  service_display_name: 'rApp Energy Saver'
+  service_description: 'Energy-saving application for optimizing power consumption of E2Nodes'
+  ric_id: 'ric4'
+  policytype_id: '5'
+
