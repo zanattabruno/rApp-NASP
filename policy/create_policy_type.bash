@@ -1,8 +1,8 @@
 #!/bin/bash
 
-POLICY_ID=4
+POLICY_ID=1
 
 
-curl -v -X PUT http://service-ricplt-a1mediator-http.ricplt.svc.cluster.local:10000/a1-p/policytypes/${POLICY_ID} \
+curl -v -X PUT http://10.101.111.161:10000/a1-p/policytypes/${POLICY_ID} \
 -H "Content-Type: application/json" \
--d @E2nodeEnergySaverSchema.json
+-d @SliceSchema.json
