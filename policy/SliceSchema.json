@@ -1,0 +1,81 @@
+{
+  "name": "E2Node Slice-level PRB Quota Schema",
+  "description": "Defines the PRB quota per slice for E2Nodes.",
+  "policy_type_id": 1,
+  "create_schema": {
+    "$schema": "http://json-schema.org/draft-07/schema#",
+    "title": "E2Node Slice-level PRB Quota Configuration",
+    "description": "A schema that defines the PRB quota per slice for E2Nodes.",
+    "type": "object",
+    "properties": {
+      "E2NodeList": {
+        "type": "array",
+        "description": "A list of E2Nodes, each defined by specific slice-level PRB quota parameters.",
+        "items": {
+          "type": "object",
+          "properties": {
+            "mcc": {
+              "type": "string",
+              "description": "Mobile Country Code identifying the country of the E2 node."
+            },
+            "mnc": {
+              "type": "string",
+              "description": "Mobile Network Code identifying the home network of the E2 node."
+            },
+            "e2nodeid": {
+              "type": "string",
+              "description": "E2 Node Identifier uniquely identifying a gNodeB within a mobile network."
+            },
+            "RRMPolicyRatioList": {
+              "type": "array",
+              "description": "A list of RRM policies to configure slice-level PRB quita.",
+              "items": {
+                "type": "object",
+                "properties": {
+                  "plmnid": {
+                    "type": "string",
+                    "description": "Identifies the Public Land Mobile Network."
+                  },
+                  "sst": {
+                    "type": "integer",
+                    "description": "Identifies a Slice Service Type."
+                  },
+                  "sd": {
+                    "type": "integer",
+                    "description": "Identifies an optional Slice Differentiator of a given Slice Service Type."
+                  },
+                  "minPRB": {
+                    "type": "integer",
+                    "description": "Defines the Min PRB Policy Ratio."
+                  },
+                  "maxPRB": {
+                    "type": "integer",
+                    "description": "Defines the Max PRB Policy Ratio."
+                  }
+                },
+                "required": [
+                  "plmnid",
+                  "sst",
+                  "minPRB",
+                  "maxPRB"
+                ],
+                "additionalProperties": false
+              }
+            }
+          },
+          "required": [
+            "mcc",
+            "mnc",
+            "e2nodeid",
+            "RRMPolicyRatioList"
+          ],
+          "additionalProperties": false
+        }
+      }
+    },
+    "required": [
+      "E2NodeList"
+    ],
+    "additionalProperties": false
+  }
+}

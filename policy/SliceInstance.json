@@ -1,0 +1,18 @@
+{
+  "E2NodeList": [
+    {
+      "mcc": "130",
+      "mnc": "260",
+      "e2nodeid": "10001",
+      "RRMPolicyRatioList": [
+        {
+          "plmnid": "312006",
+          "sst": 1,
+          "sd": 1,
+          "minPRB": 50,
+          "maxPRB": 70
+        }
+      ]
+    }
+  ]
+}
