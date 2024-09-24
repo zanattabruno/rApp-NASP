@@ -4,7 +4,7 @@ import logging
 
 logger = logging.getLogger(__name__)
 
-class rAppCatalalogueClient:
+class rAppCatalogueClient:
     """
     A client for registering a service with the rApp Catalogue.
 
