@@ -8,7 +8,7 @@ then
 fi
 
 # Define the Docker image name and tag
-IMAGE_NAME="rapp_NASP"
+IMAGE_NAME="rapp_nasp"
 TAG="latest"
 
 # Define the Docker Hub username
