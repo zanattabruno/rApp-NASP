@@ -1,0 +1,19 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ include "rapp-nasp.fullname" . }}-config
+  labels:
+    app: {{ include "rapp-nasp.name" . }}
+data:
+  config.yaml: |
+    logging:
+      level: {{ .Values.app.logging.level | quote }}
+    nonrtric:
+      base_url_rApp_catalogue: {{ .Values.app.nonrtric.base_url_rApp_catalogue | quote }}
+      base_url_pms: {{ .Values.app.nonrtric.base_url_pms | quote }}
+      service_name: {{ .Values.app.nonrtric.service_name | quote }}
+      service_version: {{ .Values.app.nonrtric.service_version | quote }}
+      service_display_name: {{ .Values.app.nonrtric.service_display_name | quote }}
+      service_description: {{ .Values.app.nonrtric.service_description | quote }}
+      ric_id: {{ .Values.app.nonrtric.ric_id | quote }}
+      policytype_id: {{ .Values.app.nonrtric.policytype_id | quote }}
