@@ -160,8 +160,10 @@ if __name__ == "__main__":
         with open(args.config, 'r') as file:
             config = yaml.safe_load(file)
     except FileNotFoundError:
+        print(f"Configuration file not found: {args.config}")
         sys.exit(1)
     except yaml.YAMLError as exc:
+        print(f"Error parsing configuration file: {exc}")
         sys.exit(1)
 
     # Now set up logging according to config
