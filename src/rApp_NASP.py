@@ -6,6 +6,7 @@ import yaml
 import uuid
 import sys
 
+from flask import Flask, request, jsonify
 from rApp_catalogue_client import rAppCatalogueClient
 
 DEFAULT_CONFIG_FILE_PATH = "src/config/config.yaml"
@@ -31,7 +32,7 @@ def setup_logging(config):
 
 def parse_arguments():
     """
-    Parses command line arguments specific to the rAPp NASP.
+    Parses command line arguments specific to the rApp NASP.
 
     Returns:
         argparse.Namespace: Parsed arguments.
@@ -47,6 +48,7 @@ class NASPPolicy:
         self.config = config
         self.slice_policy = {}
         self.e2nodelist = []
+        self.logger = logger
 
     def fill_policy_body(self, config, data):
         """
@@ -94,7 +96,7 @@ class NASPPolicy:
 
         self.slice_policy = policybody
 
-        logger.debug('Policy body: %s', json.dumps(self.slice_policy, indent=2))
+        self.logger.debug('Policy body: %s', json.dumps(self.slice_policy, indent=2))
         return self.slice_policy
 
     def put_policy(self, body):
@@ -109,16 +111,33 @@ class NASPPolicy:
         """
         complete_url = self.config['nonrtric']['base_url_pms'] + "/policies"
         headers = {"content-type": "application/json"}
-        logger.debug(f"Sending PUT request to {complete_url} with body: {json.dumps(body, indent=2)}")
+        self.logger.debug(f"Sending PUT request to {complete_url} with body: {json.dumps(body, indent=2)}")
         try:
             resp = requests.put(complete_url, json=body, headers=headers, verify=False)
             resp.raise_for_status()
         except requests.exceptions.RequestException as e:
-            logger.error(f"Failed to create policy. Error: {e}")
+            self.logger.error(f"Failed to create policy. Error: {e}")
             return False
         else:
-            logger.info("Policy created successfully.")
+            self.logger.info("Policy created successfully.")
             return True
+
+    def create_policy(self, e2_node_data):
+        """
+        Creates and posts a policy based on provided E2 node data.
+
+        Args:
+            e2_node_data (list): List of E2 nodes.
+
+        Returns:
+            dict: Result message with status.
+        """
+        policy = self.fill_policy_body(self.config, e2_node_data)
+        success = self.put_policy(policy)
+        if success:
+            return {"status": "success", "message": "Policy created successfully."}
+        else:
+            return {"status": "failure", "message": "Failed to create policy."}
 
     def load_e2nodelist(self):
         """
@@ -138,18 +157,67 @@ class NASPPolicy:
                 ]
             }
         ]
-        logger.debug("E2 node list loaded: %s", json.dumps(self.e2nodelist, indent=2))
+        self.logger.debug("E2 node list loaded: %s", json.dumps(self.e2nodelist, indent=2))
         return self.e2nodelist
 
     def run(self):
         """
         Executes the policy creation process.
         """
-        logger.info('Running the NASP rAPP.')
-        logger.debug('Configuration: %s', json.dumps(self.config, indent=2))
+        self.logger.info('Running the NASP rAPP.')
+        self.logger.debug('Configuration: %s', json.dumps(self.config, indent=2))
         self.load_e2nodelist()
         policy = self.fill_policy_body(self.config, self.e2nodelist)
         self.put_policy(policy)
+
+
+def create_app(config, logger):
+    """
+    Creates and configures the Flask application.
+
+    Args:
+        config (dict): Configuration settings.
+        logger (logging.Logger): Configured logger.
+
+    Returns:
+        Flask: Configured Flask application.
+    """
+    app = Flask(__name__)
+
+    # Initialize NASPPolicy instance
+    nasp_policy = NASPPolicy(config, logger)
+
+    @app.route('/create_policy', methods=['POST'])
+    def create_policy():
+        """
+        API endpoint to create and post a policy based on received JSON data.
+
+        Expects JSON data with E2 node information.
+
+        Returns:
+            JSON response indicating success or failure.
+        """
+        if not request.is_json:
+            logger.warning("Received non-JSON request.")
+            return jsonify({"status": "failure", "message": "Request must be in JSON format."}), 400
+
+        data = request.get_json()
+        logger.debug(f"Received data: {json.dumps(data, indent=2)}")
+
+        # Validate input data
+        if not isinstance(data, list):
+            logger.error("Invalid data format. Expected a list of E2 nodes.")
+            return jsonify({"status": "failure", "message": "Invalid data format. Expected a list of E2 nodes."}), 400
+
+        # Optionally, add more validation for each node's required fields
+
+        result = nasp_policy.create_policy(data)
+        if result["status"] == "success":
+            return jsonify(result), 201
+        else:
+            return jsonify(result), 500
+
+    return app
 
 
 if __name__ == "__main__":
@@ -176,6 +244,20 @@ if __name__ == "__main__":
         logger.info("Service successfully registered on rApp catalogue.")
     else:
         logger.error("Failed to register service.")
+        sys.exit(1)
 
-    slice_instance = NASPPolicy(config, logger)
-    slice_instance.run()
+    # Retrieve API server configurations from config file
+    api_config = config.get('api_server', {})
+    host = api_config.get('host', '0.0.0.0')  # Default to '0.0.0.0' if not specified
+    port = api_config.get('port', 5000)       # Default to 5000 if not specified
+
+    # Create Flask app
+    app = create_app(config, logger)
+
+    # Run Flask app
+    try:
+        logger.info(f"Starting API server at {host}:{port}")
+        app.run(host=host, port=port)
+    except Exception as e:
+        logger.error(f"Failed to start API server: {e}")
+        sys.exit(1)
