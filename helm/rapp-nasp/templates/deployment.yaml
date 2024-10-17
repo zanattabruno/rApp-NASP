@@ -28,28 +28,23 @@ spec:
           #args: ["rApp_NASP.py", "-c", "config/config.yaml"]
           ports:
             - name: http
-              containerPort: {{ .Values.service.port }}
+              containerPort: {{ .Values.app.api_server.port }}
               protocol: TCP
           volumeMounts:
             - name: config-volume
               mountPath: /app/config/config.yaml
               subPath: config.yaml
+          livenessProbe:
+            {{- toYaml .Values.livenessProbe | nindent 17 }}
+          readinessProbe:
+            {{- toYaml .Values.readinessProbe | nindent 17 }}
       volumes:
         - name: config-volume
           configMap:
             name: {{ include "rapp-nasp.fullname" . }}-config
-          livenessProbe:
-            {{- toYaml .Values.livenessProbe | nindent 12 }}
-          readinessProbe:
-            {{- toYaml .Values.readinessProbe | nindent 12 }}
-          {{- with .Values.volumeMounts }}
-          volumeMounts:
-            {{- toYaml . | nindent 12 }}
-          {{- end }}
-      {{- with .Values.volumes }}
-      volumes:
-        {{- toYaml . | nindent 8 }}
-      {{- end }}
+        {{- with .Values.volumes }}
+        - {{ toYaml . | nindent 12 }}
+        {{- end }}
       {{- with .Values.nodeSelector }}
       nodeSelector:
         {{- toYaml . | nindent 8 }}
