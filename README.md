@@ -1,4 +1,3 @@
-```markdown
 # rApp-NASP
 
 **Network Aware Slice Policy (NASP) rApp for O-RAN RIC**
