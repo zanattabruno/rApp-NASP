@@ -327,10 +327,3 @@ Please ensure that your contributions adhere to the project's coding standards a
 ## License
 
 This project is licensed under the [Apache License 2.0](LICENSE).
-
-## Contact
-
-For any inquiries or support, please contact:
-
-- **Email:** gkbsa2504@gmail.com
-- **GitHub:** [zanattabruno](https://github.com/zanattabruno)
