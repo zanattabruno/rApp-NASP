@@ -187,8 +187,8 @@ def create_app(config, logger):
     # Initialize NASPPolicy instance
     nasp_policy = NASPPolicy(config, logger)
 
-    @app.route('/create_policy', methods=['POST'])
-    def create_policy():
+    @app.route('/create_slice_policy', methods=['POST'])
+    def create_slice_policy():
         """
         API endpoint to create and post a policy based on received JSON data.
 
@@ -216,6 +216,8 @@ def create_app(config, logger):
             return jsonify(result), 201
         else:
             return jsonify(result), 500
+
+    app.route('/create_slice_policy', methods=['POST'])(create_slice_policy)
 
     return app
 
