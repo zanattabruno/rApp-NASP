@@ -24,8 +24,8 @@ spec:
         - name: {{ .Chart.Name }}
           image: "{{ .Values.image.repository }}:{{ .Values.image.tag | default .Chart.AppVersion }}"
           imagePullPolicy: {{ .Values.image.pullPolicy }}
-          #command: ["python3"]
-          #args: ["rApp_NASP.py", "-c", "config/config.yaml"]
+          command: ["python3"]
+          args: ["rApp_NASP.py", "-c", "config/config.yaml"]
           ports:
             - name: http
               containerPort: {{ .Values.app.api_server.port }}
