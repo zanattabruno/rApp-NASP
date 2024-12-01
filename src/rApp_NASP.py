@@ -5,6 +5,8 @@ import requests
 import yaml
 import uuid
 import sys
+from  prb_calc import to_prb
+from tools import extract_flow_bit_rate
 
 from flask import Flask, request, jsonify
 from rApp_catalogue_client import rAppCatalogueClient
@@ -85,7 +87,6 @@ class NASPPolicy:
             }
             e2_node_list.append(e2_node)
 
-        # Create the policy body with the processed E2NodeList
         policybody = {
             "ric_id": config['nonrtric']['ric_id'],
             "policy_id": str(uuid.uuid4()),
@@ -204,6 +205,10 @@ def create_app(config, logger):
         data = request.get_json()
         logger.debug(f"Received data: {json.dumps(data, indent=2)}")
 
+        downlink, uplink = extract_flow_bit_rate(data)
+        downlink_prb = to_prb(downlink, False, 28, 1, 50, symbol_format=0, is_tdd=True)
+        uplink_prb = to_prb(uplink, True, 28, 1, 50, symbol_format=0, is_tdd=True)
+        logger.debug(f"Downlink PRB: {downlink_prb}, Uplink PRB: {uplink_prb}")
         # Validate input data
         if not isinstance(data, list):
             logger.error("Invalid data format. Expected a list of E2 nodes.")
