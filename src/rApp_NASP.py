@@ -5,8 +5,7 @@ import requests
 import yaml
 import uuid
 import sys
-from  prb_calc import to_prb
-from tools import extract_flow_bit_rate
+from tools import extract_flow_bit_rate, to_prb
 
 from flask import Flask, request, jsonify
 from rApp_catalogue_client import rAppCatalogueClient
