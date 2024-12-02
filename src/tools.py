@@ -1,17 +1,17 @@
 import json
 
 def extract_flow_bit_rate(json_data):
-    downlink = None
-    uplink = None
+    downlink_min = None
+    downlink_max = None
 
     def search(data):
-        nonlocal downlink, uplink
+        nonlocal downlink_min, downlink_max
         if isinstance(data, dict):
             for key, value in data.items():
                 if key == "Guaranteed Flow Bit Rate - Downlink":
-                    downlink = value
-                elif key == "Guaranteed Flow Bit Rate - Uplink":
-                    uplink = value
+                    downlink_min = value
+                elif key == "Max Flow Bit Rate - Downlink":
+                    downlink_max = value
                 else:
                     search(value)
         elif isinstance(data, list):
@@ -19,7 +19,7 @@ def extract_flow_bit_rate(json_data):
                 search(item)
 
     search(json_data)
-    return downlink, uplink
+    return downlink_min, downlink_max
 
 from dataclasses import dataclass
 from math import ceil
