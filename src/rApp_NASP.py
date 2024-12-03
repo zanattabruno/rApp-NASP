@@ -5,8 +5,7 @@ import requests
 import yaml
 import uuid
 import sys
-from tools import extract_flow_bit_rate, to_prb
-
+from tools import extract_policy_data
 from flask import Flask, request, jsonify
 from rApp_catalogue_client import rAppCatalogueClient
 
@@ -203,12 +202,9 @@ def create_app(config, logger):
 
         data = request.get_json()
         logger.debug(f"Received data: {json.dumps(data, indent=2)}")
+        policy_data= extract_policy_data(data)
+        logger.debug(f"Extracted data: {json.dumps(policy_data, indent=2)}")
 
-        downlink_min, downlink_max = extract_flow_bit_rate(data)
-        logger.debug(f"Downlink min: {downlink_min}, Downlink max: {downlink_max}")
-        downlink_min_prb = to_prb(downlink_min, False, 28, 1, 50, is_tdd=False)
-        downlink_max_prb = to_prb(downlink_max, False, 28, 1, 50, is_tdd=False)
-        logger.debug(f"Downlink min PRB: {downlink_min_prb}, Downlink max PRB: {downlink_max_prb}")
         # Validate input data
         if not isinstance(data, list):
             logger.error("Invalid data format. Expected a list of E2 nodes.")

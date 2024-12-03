@@ -1,5 +1,59 @@
 import json
 
+def extract_policy_data(json_data):
+    downlink_min = None
+    downlink_max = None
+    mcc = None
+    mnc = None
+    sst = None
+    sd = None
+
+    def search(data):
+        nonlocal downlink_min, downlink_max, mcc, mnc, sst, sd
+        if isinstance(data, dict):
+            for key, value in data.items():
+                if key == "Guaranteed Flow Bit Rate - Downlink":
+                    downlink_min = value
+                elif key == "Max Flow Bit Rate - Downlink":
+                    downlink_max = value
+                elif key == "mcc":
+                    mcc = str(value).zfill(3)
+                elif key == "mnc":
+                    mnc = str(value).zfill(2)
+                elif key == "sst":
+                    sst = value
+                elif key == "sd":
+                    sd = value
+                else:
+                    search(value)
+        elif isinstance(data, list):
+            for item in data:
+                search(item)
+
+    search(json_data)
+    
+    minPRB = to_prb(downlink_min, False, 28, 1, 50, is_tdd=False)
+    maxPRB = to_prb(downlink_max, False, 28, 1, 50, is_tdd=False)
+
+
+    # Construct the output JSON
+    output = {
+        "RRMPolicyRatioList": [
+            {
+                "plmnId": {
+                    "mcc": mcc if mcc else "001",
+                    "mnc": mnc if mnc else "01"
+                },
+                "sst": sst if sst else 1,
+                "sd": sd if sd else 1,
+                "minPRB": minPRB,
+                "maxPRB": maxPRB
+            }
+        ]
+    }
+
+    return output
+
 def extract_flow_bit_rate(json_data):
     downlink_min = None
     downlink_max = None
