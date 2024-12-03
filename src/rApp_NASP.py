@@ -206,8 +206,8 @@ def create_app(config, logger):
 
         downlink_min, downlink_max = extract_flow_bit_rate(data)
         logger.debug(f"Downlink min: {downlink_min}, Downlink max: {downlink_max}")
-        downlink_min_prb = to_prb(downlink_min, False, 28, 1, 50, is_tdd=False)
-        downlink_max_prb = to_prb(downlink_max, False, 28, 1, 50, is_tdd=False)
+        downlink_min_prb = to_prb(downlink_min, False, 28, 1, 50, is_tdd=True)
+        downlink_max_prb = to_prb(downlink_max, False, 28, 1, 50, is_tdd=True)
         logger.debug(f"Downlink min PRB: {downlink_min_prb}, Downlink max PRB: {downlink_max_prb}")
         # Validate input data
         if not isinstance(data, list):
