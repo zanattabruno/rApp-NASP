@@ -52,44 +52,43 @@ class NASPPolicy:
 
     def fill_policy_body(self, config, data):
         """
-        Fills the policybody dictionary with the required values from the configuration and data.
+        Fills the policy body dictionary with the required values from the configuration and data.
 
         Args:
             config (dict): Configuration settings.
-            data (list): List of E2 nodes.
-
-        Returns:
-            dict: Filled policybody dictionary.
+            data (dict): Data containing the nodes.
         """
-        e2_node_list = []
+        rrm_policy_ratio_list = []
 
-        for node in data:
-            # Prepare RRMPolicyRatioList for each node
-            rrm_policy_ratio_list = []
+        # Extract the list of nodes from data
+        data_nodes = data.get('nodes', [])
+        if not data_nodes:
+            self.logger.error("No 'nodes' found in data")
+            return None  # or handle the error as appropriate
+
+        for node in data_nodes:
             if "RRMPolicyRatioList" in node:
                 for policy in node["RRMPolicyRatioList"]:
                     rrm_policy_ratio = {
-                        "plmnid": policy["plmnid"],
-                        "sst": policy["sst"],
-                        "sd": policy["sd"],
-                        "minPRB": policy["minPRB"],
-                        "maxPRB": policy["maxPRB"]
+                        "plmnId": {
+                            "mcc": node["plmnId"]["mcc"],
+                            "mnc": node["plmnId"]["mnc"]
+                        },
+                        "nci": node.get("nci", ""),
+                        "sst": policy.get("sst", ""),
+                        "sd": policy.get("sd", ""),
+                        "minPRB": policy.get("minPRB", 0),
+                        "maxPRB": policy.get("maxPRB", 0)
                     }
                     rrm_policy_ratio_list.append(rrm_policy_ratio)
-
-            e2_node = {
-                "mcc": node["mcc"],
-                "mnc": node["mnc"],
-                "e2nodeid": node["e2nodeid"],
-                "RRMPolicyRatioList": rrm_policy_ratio_list
-            }
-            e2_node_list.append(e2_node)
+            else:
+                self.logger.warning(f"No 'RRMPolicyRatioList' found in node: {node}")
 
         policybody = {
             "ric_id": config['nonrtric']['ric_id'],
             "policy_id": str(uuid.uuid4()),
             "service_id": config['nonrtric']['service_name'],
-            "policy_data": {"E2NodeList": e2_node_list},
+            "policy_data": {"RRMPolicyRatioList": rrm_policy_ratio_list},
             "policytype_id": config['nonrtric']['policytype_id'],
         }
 
@@ -203,7 +202,8 @@ def create_app(config, logger):
         data = request.get_json()
         logger.debug(f"Received data: {json.dumps(data, indent=2)}")
         policy_data= create_rrm_policy(data)
-        logger.debug(f"Extracted data: {json.dumps(policy_data, indent=2)}")
+        logger.debug(f"Created policy data: {json.dumps(policy_data, indent=2)}")
+        result = nasp_policy.put_policy(policy_data)
 
         # Optionally, add more validation for each node's required fields
 
