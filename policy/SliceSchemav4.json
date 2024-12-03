@@ -1,7 +1,10 @@
 {
+  "name": "E2Node Slice-level PRB Quota Schema",
+  "description": "Defines the PRB quota per slice for E2Nodes.",
+  "policy_type_id": 1,
+  "create_schema": {
   "$schema": "http://json-schema.org/draft-07/schema#",
   "title": "E2Node Slice-level PRB Quota Configuration",
-  "description": "A schema that defines the PRB quota per slice for E2Nodes.",
   "type": "object",
   "properties": {
     "RRMPolicyRatioList": {
@@ -12,25 +15,22 @@
         "properties": {
           "plmnId": {
             "type": "object",
-            "description": "Identifies the Public Land Mobile Network.",
+            "description": "Identifies the Public Land Mobile Network with MCC and MNC.",
             "properties": {
               "mcc": {
                 "type": "string",
-                "description": "Mobile Country Code identifying the country."
+                "description": "Mobile Country Code."
               },
               "mnc": {
                 "type": "string",
-                "description": "Mobile Network Code identifying the home network."
+                "description": "Mobile Network Code."
               }
             },
-            "required": [
-              "mcc",
-              "mnc"
-            ]
+            "required": ["mcc", "mnc"]
           },
           "nci": {
-            "type": "integer",
-            "description": "E2 Node Identifier uniquely identifying a gNodeB within a mobile network."
+            "type": "string",
+            "description": "Identifies the NR Cell Identity."
           },
           "sst": {
             "type": "integer",
@@ -49,19 +49,12 @@
             "description": "Defines the Max PRB Policy Ratio."
           }
         },
-        "required": [
-          "plmnId",
-          "nci",
-          "sst",
-          "minPRB",
-          "maxPRB"
-        ],
+        "required": ["plmnId", "nci", "sst", "sd", "minPRB", "maxPRB"],
         "additionalProperties": false
       }
     }
   },
-  "required": [
-    "RRMPolicyRatioList"
-  ],
+  "required": ["RRMPolicyRatioList"],
   "additionalProperties": false
+  }
 }
