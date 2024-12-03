@@ -1,65 +1,111 @@
 import json
 
-def extract_policy_data(json_data):
-    RRMPolicyRatioList = []
-
-    def search(data):
-        if isinstance(data, dict):
-            downlink_min = data.get("Guaranteed Flow Bit Rate - Downlink")
-            downlink_max = data.get("Max Flow Bit Rate - Downlink")
-            mcc = data.get("mcc")
-            mnc = data.get("mnc")
-            sst = data.get("sst")
-            sd = data.get("sd")
-
-            if any([downlink_min, downlink_max, mcc, mnc, sst, sd]):
-                minPRB = to_prb(downlink_min, False, 28, 1, 50, is_tdd=False)
-                maxPRB = to_prb(downlink_max, False, 28, 1, 50, is_tdd=False)
-
-                RRMPolicyRatioList.append({
-                    "plmnId": {
-                        "mcc": str(mcc).zfill(3) if mcc else "001",
-                        "mnc": str(mnc).zfill(2) if mnc else "01"
-                    },
-                    "sst": sst if sst else 1,
-                    "sd": sd if sd else 1,
-                    "minPRB": minPRB,
-                    "maxPRB": maxPRB
-                })
-            for value in data.values():
-                search(value)
-        elif isinstance(data, list):
-            for item in data:
-                search(item)
-
-    search(json_data)
-
-    output = {
-        "RRMPolicyRatioList": RRMPolicyRatioList
+def create_rrm_policy(input_json):
+    def remove_duplicates_from_rrm_policy(data):
+        """
+        Removes duplicate entries from the 'RRMPolicyRatioList' in the provided data dictionary.
+        """
+        # Check if 'RRMPolicyRatioList' exists in the data
+        if "RRMPolicyRatioList" in data:
+            dict_list = data["RRMPolicyRatioList"]
+            seen = set()
+            new_list = []
+            for d in dict_list:
+                # Serialize the dictionary into a JSON string with sorted keys
+                s = json.dumps(d, sort_keys=True)
+                if s not in seen:
+                    seen.add(s)
+                    new_list.append(d)
+            # Update the list in the data dictionary
+            data["RRMPolicyRatioList"] = new_list
+        else:
+            print("Key 'RRMPolicyRatioList' not found in data.")
+        return data
+    # Access the 'description' key in the input JSON
+    description = input_json.get("description", {})
+    
+    # Extract plmnId and snssaiList from description -> resource_description -> core -> nfs where name == "amf"
+    nfs_core = description["resource_description"]["core"]["nfs"]
+    for nf in nfs_core:
+        if nf.get("name") == "amf":
+            amf_config = nf.get("config", {})
+            amf_plmnSupportList = amf_config.get("plmnSupportList", [])
+            break
+    else:
+        amf_plmnSupportList = []
+    
+    # Extract mcc, mnc, nci, slices from description -> resource_description -> ran -> nfs where name == "ueransim"
+    nfs_ran = description["resource_description"]["ran"]["nfs"]
+    for nf in nfs_ran:
+        if nf.get("name") == "ueransim":
+            ran_config = nf.get("config", {})
+            break
+    else:
+        ran_config = {}
+    
+    ran_mcc = ran_config.get("mcc", "")
+    ran_mnc = ran_config.get("mnc", "")
+    ran_nci = ran_config.get("nci", "")
+    ran_slices = ran_config.get("slices", [])
+    
+    # Get the Guaranteed Flow Bit Rate - Downlink and Max Flow Bit Rate - Downlink
+    ssq = description["Slice Attributes"]["SSQ"]
+    guaranteed_flow_bit_rate_downlink = ssq.get("Guaranteed Flow Bit Rate - Downlink", 0)
+    max_flow_bit_rate_downlink = ssq.get("Max Flow Bit Rate - Downlink", 0)
+    
+    # Use function toPRB to calculate minPRB and maxPRB
+    def toPRB(flow_bit_rate):
+        # Placeholder function; replace with your actual implementation
+        if flow_bit_rate == guaranteed_flow_bit_rate_downlink:
+            return 50  # Example value
+        elif flow_bit_rate == max_flow_bit_rate_downlink:
+            return 70  # Example value
+        else:
+            return 0  # Default value if flow bit rate is unknown
+    
+    rrm_policy_ratio_list = []
+    
+    # First, process amf snssaiList
+    for plmnSupport in amf_plmnSupportList:
+        plmnId = plmnSupport.get("plmnId", {})
+        snssaiList = plmnSupport.get("snssaiList", [])
+        for snssai in snssaiList:
+            sst = snssai.get("sst")
+            sd = snssai.get("sd")
+            entry = {
+                "plmnId": {
+                    "mcc": str(plmnId.get("mcc", "")),
+                    "mnc": str(plmnId.get("mnc", ""))
+                },
+                "nci": ran_nci,
+                "sst": sst,
+                "sd": sd,
+                "minPRB": toPRB(guaranteed_flow_bit_rate_downlink),
+                "maxPRB": toPRB(max_flow_bit_rate_downlink)
+            }
+            rrm_policy_ratio_list.append(entry)
+    
+    # Then, process ran slices
+    for slice_item in ran_slices:
+        sst = slice_item.get("sst")
+        sd = slice_item.get("sd")
+        entry = {
+            "plmnId": {
+                "mcc": ran_mcc,
+                "mnc": ran_mnc
+            },
+            "nci": ran_nci,
+            "sst": sst,
+            "sd": sd,
+            "minPRB": toPRB(guaranteed_flow_bit_rate_downlink),
+            "maxPRB": toPRB(max_flow_bit_rate_downlink)
+        }
+        rrm_policy_ratio_list.append(entry)
+    
+    result = {
+        "RRMPolicyRatioList": rrm_policy_ratio_list
     }
-
-    return output
-
-def extract_flow_bit_rate(json_data):
-    downlink_min = None
-    downlink_max = None
-
-    def search(data):
-        nonlocal downlink_min, downlink_max
-        if isinstance(data, dict):
-            for key, value in data.items():
-                if key == "Guaranteed Flow Bit Rate - Downlink":
-                    downlink_min = value
-                elif key == "Max Flow Bit Rate - Downlink":
-                    downlink_max = value
-                else:
-                    search(value)
-        elif isinstance(data, list):
-            for item in data:
-                search(item)
-
-    search(json_data)
-    return downlink_min, downlink_max
+    return remove_duplicates_from_rrm_policy(result)
 
 from dataclasses import dataclass
 from math import ceil

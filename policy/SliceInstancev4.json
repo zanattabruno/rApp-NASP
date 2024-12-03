@@ -1,0 +1,15 @@
+{
+  "RRMPolicyRatioList": [
+    {
+      "plmnId": {
+	    "mcc": "001",
+    "mnc": "01"
+      },
+      "nci": 158220411,
+      "sst": 1,
+      "sd": 1,
+      "minPRB": 50,
+      "maxPRB": 70
+    }
+  ]
+}

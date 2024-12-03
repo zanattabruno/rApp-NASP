@@ -5,7 +5,7 @@ import requests
 import yaml
 import uuid
 import sys
-from tools import extract_policy_data
+from tools import create_rrm_policy
 from flask import Flask, request, jsonify
 from rApp_catalogue_client import rAppCatalogueClient
 
@@ -202,13 +202,8 @@ def create_app(config, logger):
 
         data = request.get_json()
         logger.debug(f"Received data: {json.dumps(data, indent=2)}")
-        policy_data= extract_policy_data(data)
+        policy_data= create_rrm_policy(data)
         logger.debug(f"Extracted data: {json.dumps(policy_data, indent=2)}")
-
-        # Validate input data
-        if not isinstance(data, list):
-            logger.error("Invalid data format. Expected a list of E2 nodes.")
-            return jsonify({"status": "failure", "message": "Invalid data format. Expected a list of E2 nodes."}), 400
 
         # Optionally, add more validation for each node's required fields
 
