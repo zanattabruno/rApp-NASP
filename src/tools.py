@@ -1,4 +1,9 @@
 import json
+import logging
+
+# Configure logger
+logging.basicConfig(level=logging.DEBUG)
+logger = logging.getLogger(__name__)
 
 def create_rrm_policy(input_json):
     def remove_duplicates_from_rrm_policy(data):
@@ -50,10 +55,11 @@ def create_rrm_policy(input_json):
     ran_nci = ran_config.get("nci", "")
     ran_slices = ran_config.get("slices", [])
 
-    # Get the Guaranteed Flow Bit Rate - Downlink and Max Flow Bit Rate - Downlink
-    ssq = input_json.get("Slice Attributes", {}).get("SSQ", {})
+    # Correctly accessing ssq under description -> Slice Attributes -> SSQ
+    ssq = input_json.get("description", {}).get("Slice Attributes", {}).get("SSQ", {})
     guaranteed_flow_bit_rate_downlink = ssq.get("Guaranteed Flow Bit Rate - Downlink", 0)
     max_flow_bit_rate_downlink = ssq.get("Max Flow Bit Rate - Downlink", 0)
+    logger.debug(f"guaranteed_flow_bit_rate_downlink: {guaranteed_flow_bit_rate_downlink}", f"max_flow_bit_rate_downlink: {max_flow_bit_rate_downlink}")
 
     rrm_policy_ratio_list = []
 
