@@ -55,16 +55,6 @@ def create_rrm_policy(input_json):
     guaranteed_flow_bit_rate_downlink = ssq.get("Guaranteed Flow Bit Rate - Downlink", 0)
     max_flow_bit_rate_downlink = ssq.get("Max Flow Bit Rate - Downlink", 0)
 
-    # Use function toPRB to calculate minPRB and maxPRB
-    def toPRB(flow_bit_rate):
-        # Placeholder function; replace with your actual implementation
-        if flow_bit_rate == guaranteed_flow_bit_rate_downlink:
-            return 50  # Example value
-        elif flow_bit_rate == max_flow_bit_rate_downlink:
-            return 70  # Example value
-        else:
-            return 0  # Default value if flow bit rate is unknown
-
     rrm_policy_ratio_list = []
 
     # First, process amf plmnSupportList
@@ -82,8 +72,8 @@ def create_rrm_policy(input_json):
                 "nci": ran_nci,
                 "sst": sst,
                 "sd": sd,
-            "minPRB": toPRB(guaranteed_flow_bit_rate_downlink,False, 28, 1, 50, is_tdd=False),
-            "maxPRB": toPRB(max_flow_bit_rate_downlink, False, 28, 1, 50, is_tdd=False)
+            "minPRB": to_prb(guaranteed_flow_bit_rate_downlink,False, 28, 1, 50, is_tdd=False),
+            "maxPRB": to_prb(max_flow_bit_rate_downlink, False, 28, 1, 50, is_tdd=False)
             }
             rrm_policy_ratio_list.append(entry)
 
@@ -99,8 +89,8 @@ def create_rrm_policy(input_json):
             "nci": ran_nci,
             "sst": sst,
             "sd": sd,
-            "minPRB": toPRB(guaranteed_flow_bit_rate_downlink,False, 28, 1, 50, is_tdd=False),
-            "maxPRB": toPRB(max_flow_bit_rate_downlink, False, 28, 1, 50, is_tdd=False)
+            "minPRB": to_prb(guaranteed_flow_bit_rate_downlink,False, 28, 1, 50, is_tdd=False),
+            "maxPRB": to_prb(max_flow_bit_rate_downlink, False, 28, 1, 50, is_tdd=False)
         }
         rrm_policy_ratio_list.append(entry)
 
