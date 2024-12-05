@@ -47,7 +47,7 @@ class NASPPolicy:
     def __init__(self, config, logger):
         self.config = config
         self.slice_policy = {}
-        self.e2nodelist = []
+        self.e2nodelist = {}
         self.logger = logger
 
     def fill_policy_body(self, config, data):
@@ -56,33 +56,17 @@ class NASPPolicy:
 
         Args:
             config (dict): Configuration settings.
-            data (dict): Data containing the nodes.
+            data (dict): Data containing the RRMPolicyRatioList.
+
+        Returns:
+            dict or None: The policy body if successful, None otherwise.
         """
-        rrm_policy_ratio_list = []
+        self.logger.debug('Policy data received: %s', json.dumps(data, indent=2))
 
-        # Extract the list of nodes from data
-        data_nodes = data.get('nodes', [])
-        if not data_nodes:
-            self.logger.error("No 'nodes' found in data")
-            return None  # or handle the error as appropriate
-
-        for node in data_nodes:
-            if "RRMPolicyRatioList" in node:
-                for policy in node["RRMPolicyRatioList"]:
-                    rrm_policy_ratio = {
-                        "plmnId": {
-                            "mcc": node["plmnId"]["mcc"],
-                            "mnc": node["plmnId"]["mnc"]
-                        },
-                        "nci": node.get("nci", ""),
-                        "sst": policy.get("sst", ""),
-                        "sd": policy.get("sd", ""),
-                        "minPRB": policy.get("minPRB", 0),
-                        "maxPRB": policy.get("maxPRB", 0)
-                    }
-                    rrm_policy_ratio_list.append(rrm_policy_ratio)
-            else:
-                self.logger.warning(f"No 'RRMPolicyRatioList' found in node: {node}")
+        rrm_policy_ratio_list = data.get('RRMPolicyRatioList', [])
+        if not rrm_policy_ratio_list:
+            self.logger.error("No 'RRMPolicyRatioList' found in data")
+            return None
 
         policybody = {
             "ric_id": config['nonrtric']['ric_id'],
@@ -120,17 +104,20 @@ class NASPPolicy:
             self.logger.info("Policy created successfully.")
             return True
 
-    def create_policy(self, e2_node_data):
+    def create_policy(self, policy_data):
         """
-        Creates and posts a policy based on provided E2 node data.
+        Creates and posts a policy based on provided policy data.
 
         Args:
-            e2_node_data (list): List of E2 nodes.
+            policy_data (dict): Data containing RRMPolicyRatioList.
 
         Returns:
             dict: Result message with status.
         """
-        policy = self.fill_policy_body(self.config, e2_node_data)
+        policy = self.fill_policy_body(self.config, policy_data)
+        if policy is None:
+            return {"status": "failure", "message": "Policy data is invalid."}
+
         success = self.put_policy(policy)
         if success:
             return {"status": "success", "message": "Policy created successfully."}
@@ -142,19 +129,14 @@ class NASPPolicy:
         Loads E2 node list from a data source. Currently a stub method returning example data.
 
         Returns:
-            list: List of E2 nodes.
+            dict: Data containing RRMPolicyRatioList.
         """
         # Mocked data for example purposes
-        self.e2nodelist = [
-            {
-                "mcc": "001",
-                "mnc": "01",
-                "e2nodeid": "node123",
-                "RRMPolicyRatioList": [
-                    {"plmnid": "00101", "sst": 1, "sd": 1, "minPRB": 10, "maxPRB": 20}
-                ]
-            }
-        ]
+        self.e2nodelist = {
+            "RRMPolicyRatioList": [
+                {"plmnid": "00101", "sst": 1, "sd": 1, "minPRB": 10, "maxPRB": 20}
+            ]
+        }
         self.logger.debug("E2 node list loaded: %s", json.dumps(self.e2nodelist, indent=2))
         return self.e2nodelist
 
@@ -166,7 +148,10 @@ class NASPPolicy:
         self.logger.debug('Configuration: %s', json.dumps(self.config, indent=2))
         self.load_e2nodelist()
         policy = self.fill_policy_body(self.config, self.e2nodelist)
-        self.put_policy(policy)
+        if policy:
+            self.put_policy(policy)
+        else:
+            self.logger.error("Failed to create policy body.")
 
 
 def create_app(config, logger):
@@ -201,19 +186,17 @@ def create_app(config, logger):
 
         data = request.get_json()
         logger.debug(f"Received data: {json.dumps(data, indent=2)}")
-        policy_data= create_rrm_policy(data)
-        logger.debug(f"Created policy data: {json.dumps(policy_data, indent=2)}")
-        result = nasp_policy.put_policy(policy_data)
+        policy_data = create_rrm_policy(data)
+        if not policy_data:
+            logger.error("Failed to create policy data from the request.")
+            return jsonify({"status": "failure", "message": "Invalid policy data."}), 400
 
-        # Optionally, add more validation for each node's required fields
-
-        result = nasp_policy.create_policy(data)
+        logger.debug(f"Created policy data: %s", json.dumps(policy_data, indent=2))
+        result = nasp_policy.create_policy(policy_data)
         if result["status"] == "success":
             return jsonify(result), 201
         else:
             return jsonify(result), 500
-
-    app.route('/create_slice_policy', methods=['POST'])(create_slice_policy)
 
     return app
 
