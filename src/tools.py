@@ -19,8 +19,12 @@ def create_rrm_policy(input_json):
             print("Key 'RRMPolicyRatioList' not found in data.")
         return data
 
-    # Access 'resource_description' directly from input_json
-    resource_description = input_json.get("resource_description", {})
+    # Access 'resource_description' from 'description'
+    resource_description = input_json.get("description", {}).get("resource_description", {})
+
+    # Extract 'Slice Attributes' from 'description'
+    slice_attributes = input_json.get("description", {}).get("Slice Attributes", {})
+    ssq = slice_attributes.get("SSQ", {})
 
     # Extract plmnId and snssaiList from resource_description -> core -> nfs where name == "amf"
     nfs_core = resource_description.get("core", {}).get("nfs", [])
@@ -78,8 +82,8 @@ def create_rrm_policy(input_json):
                 "nci": ran_nci,
                 "sst": sst,
                 "sd": sd,
-                "minPRB": toPRB(guaranteed_flow_bit_rate_downlink),
-                "maxPRB": toPRB(max_flow_bit_rate_downlink)
+            "minPRB": toPRB(guaranteed_flow_bit_rate_downlink,False, 28, 1, 50, is_tdd=False),
+            "maxPRB": toPRB(max_flow_bit_rate_downlink, False, 28, 1, 50, is_tdd=False)
             }
             rrm_policy_ratio_list.append(entry)
 
@@ -95,8 +99,8 @@ def create_rrm_policy(input_json):
             "nci": ran_nci,
             "sst": sst,
             "sd": sd,
-            "minPRB": toPRB(guaranteed_flow_bit_rate_downlink),
-            "maxPRB": toPRB(max_flow_bit_rate_downlink)
+            "minPRB": toPRB(guaranteed_flow_bit_rate_downlink,False, 28, 1, 50, is_tdd=False),
+            "maxPRB": toPRB(max_flow_bit_rate_downlink, False, 28, 1, 50, is_tdd=False)
         }
         rrm_policy_ratio_list.append(entry)
 
