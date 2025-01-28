@@ -42,7 +42,7 @@ app:
     service_display_name: 'rApp NASP'
     service_description: 'Application for optimizing network slicing'
     ric_id: 'ric4'
-    policytype_id: '1'
+    policytype_id: 1
   api_server:
     host: '0.0.0.0'  # Host address for the API server
     port: 5000       # Port number for the API server

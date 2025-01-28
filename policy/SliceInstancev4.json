@@ -1,6 +1,6 @@
 {
   "ric_id": "ric4",
-  "policy_id": "1234",
+  "policy_id": "12345",
   "service_id": "rAppNASP",
   "policy_data": {
     "RRMPolicyRatioList": [
@@ -39,5 +39,5 @@
       }
     ]
   },
-"policytype_id": "1"
+"policytype_id": 1
 }
