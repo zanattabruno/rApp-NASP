@@ -11,7 +11,8 @@ kubectl rollout restart deployment deployment-ricplt-submgr -n ricplt &
 kubectl rollout restart deployment deployment-ricplt-vespamgr -n ricplt & 
 kubectl rollout restart deployment deployment-ricplt-e2term-alpha -n ricplt &
 kubectl rollout restart deployment r4-infrastructure-prometheus-server  -n ricplt &
-kubectl rollout restart deployment r4-infrastructure-prometheus-alertmanager -n ricplt
+kubectl rollout restart deployment r4-infrastructure-prometheus-alertmanager -n ricplt &
+kubectl rollout restart deployment ricxapp-slicing-xapp -n ricxapp
 
 echo "Restarting Non-RT RIC..." &&
 kubectl rollout restart deployment a1controller -n nonrtric &
@@ -33,4 +34,5 @@ kubectl delete pvc helmmanager-vardata-helmmanager-0 -n nonrtric &
 kubectl rollout restart statefulset informationservice -n nonrtric &&
 kubectl delete pvc informationservice-vardata-informationservice-0 -n nonrtric &
 kubectl rollout restart statefulset policymanagementservice -n nonrtric &&
-kubectl delete pvc policymanagementservice-vardata-policymanagementservice-0 -n nonrtric
+kubectl delete pvc policymanagementservice-vardata-policymanagementservice-0 -n nonrtric &
+kubectl rollout restart deployment rappnasp-rapp-nasp -n ricrapp
