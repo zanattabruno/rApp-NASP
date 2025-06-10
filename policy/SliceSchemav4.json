@@ -29,7 +29,7 @@
             "required": ["mcc", "mnc"]
           },
           "nci": {
-            "type": "string",
+            "type": "integer",
             "description": "Identifies the NR Cell Identity."
           },
           "sst": {
