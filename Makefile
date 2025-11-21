@@ -1,6 +1,7 @@
 # Convenience targets for building images and running the NASP rApp
 
 PYTHON ?= python3
+VENV ?= .venv
 DOCKER ?= docker
 HELM ?= helm
 APP ?= src/rApp_NASP.py
@@ -16,7 +17,7 @@ HELM_CHART ?= helm/rapp-nasp
 HELM_RELEASE ?= rapp-nasp
 HELM_NAMESPACE ?= ricrapp
 
-.PHONY: help build tag push run docker-run install
+.PHONY: help build tag push run docker-run install venv
 
 help:
 	@echo "Available targets:"
@@ -26,6 +27,7 @@ help:
 	@echo "  make run         Run the Flask app locally with the configured YAML"
 	@echo "  make docker-run  Run the Docker image locally and expose the API port"
 	@echo "  make install     Deploy/upgrade the Helm release"
+	@echo "  make venv        Create a local Python virtual environment ($(VENV))"
 
 build:
 	$(DOCKER) build -t $(LOCAL_IMAGE) .
@@ -48,3 +50,6 @@ docker-run: build
 install:
 	$(HELM) upgrade --install $(HELM_RELEASE) $(HELM_CHART) \
 		--namespace $(HELM_NAMESPACE)
+
+venv:
+	$(PYTHON) -m venv $(VENV)

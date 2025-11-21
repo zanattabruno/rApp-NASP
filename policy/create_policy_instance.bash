@@ -2,7 +2,7 @@
 
 # Resolve payload path relative to this script so it works from any directory.
 SCRIPT_DIR="$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")" && pwd)"
-PAYLOAD_FILE="$SCRIPT_DIR/SliceInstancev4.json"
+PAYLOAD_FILE="$SCRIPT_DIR/SliceInstancev5.json"
 
 if [[ ! -f "$PAYLOAD_FILE" ]]; then
 	echo "Payload file not found: $PAYLOAD_FILE" >&2

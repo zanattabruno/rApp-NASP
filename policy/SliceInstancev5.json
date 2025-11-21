@@ -1,0 +1,21 @@
+{
+  "ric_id": "ric4",
+  "policy_id": "12345",
+  "service_id": "rAppNASP",
+  "policy_data": {
+    "RRMPolicyRatioList": [
+      {
+        "plmnId": {
+          "mcc": "208",
+          "mnc": "93"
+        },
+        "nci": 411,
+        "sst": 1,
+        "sd": "0x111111",
+        "minPRB": 50,
+        "maxPRB": 50
+      }
+    ]
+  },
+"policytype_id": 1
+}
