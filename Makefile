@@ -7,7 +7,7 @@ APP ?= src/rApp_NASP.py
 CONFIG ?= src/config/config.yaml
 
 IMAGE_NAME ?= rapp_nasp
-IMAGE_TAG ?= 0.1
+IMAGE_TAG ?= 0.1.1
 REGISTRY ?= zanattabruno
 LOCAL_IMAGE ?= $(IMAGE_NAME):$(IMAGE_TAG)
 REMOTE_IMAGE ?= $(REGISTRY)/$(IMAGE_NAME):$(IMAGE_TAG)
