@@ -68,12 +68,18 @@ class NASPPolicy:
             self.logger.error("No 'RRMPolicyRatioList' found in data")
             return None
 
+        try:
+            policytype_id = int(config['nonrtric']['policytype_id'])
+        except (KeyError, TypeError, ValueError):
+            self.logger.error("Invalid policytype_id in configuration; must be an integer.")
+            return None
+
         policybody = {
             "ric_id": config['nonrtric']['ric_id'],
             "policy_id": str(uuid.uuid4()),
             "service_id": config['nonrtric']['service_name'],
             "policy_data": {"RRMPolicyRatioList": rrm_policy_ratio_list},
-            "policytype_id": config['nonrtric']['policytype_id'],
+            "policytype_id": policytype_id,
         }
 
         self.slice_policy = policybody

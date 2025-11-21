@@ -16,4 +16,4 @@ data:
       service_display_name: {{ .Values.app.nonrtric.service_display_name | quote }}
       service_description: {{ .Values.app.nonrtric.service_description | quote }}
       ric_id: {{ .Values.app.nonrtric.ric_id | quote }}
-      policytype_id: {{ .Values.app.nonrtric.policytype_id | quote }}
+      policytype_id: {{ .Values.app.nonrtric.policytype_id }}
